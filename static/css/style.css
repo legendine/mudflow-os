@@ -1,0 +1,187 @@
+/* MudFlow OS - Industrial Rig Operating System Theme */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg-primary: #0A0E17;
+  --bg-surface: #111827;
+  --bg-card: #182234;
+  --bg-card-hover: #1E293B;
+  --border-subtle: #243247;
+  --border-focus: #0284C7;
+  --text-main: #F1F5F9;
+  --text-muted: #94A3B8;
+  --accent-cyan: #06B6D4;
+  --accent-amber: #F59E0B;
+  --accent-emerald: #10B981;
+  --accent-rose: #F43F5E;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+.mono-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0B111E;
+}
+::-webkit-scrollbar-thumb {
+  background: #25334A;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3B82F6;
+}
+
+/* Glass & Card styles */
+.rig-card {
+  background-color: rgba(24, 34, 52, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rig-card:hover {
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.rig-input {
+  background-color: #0F172A;
+  border: 1px solid #334155;
+  color: #F8FAFC;
+  font-family: 'JetBrains Mono', monospace;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  transition: all 0.15s ease-in-out;
+  width: 100%;
+}
+
+.rig-input:focus {
+  outline: none;
+  border-color: #0284C7;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.25);
+}
+
+.rig-input-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94A3B8;
+  margin-bottom: 0.35rem;
+}
+
+.telemetry-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.badge-laminar {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-turbulent {
+  background-color: rgba(244, 63, 94, 0.15);
+  color: #FB7185;
+  border: 1px solid rgba(244, 63, 94, 0.3);
+}
+
+.badge-warning {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #FBBF24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-cyan {
+  background-color: rgba(6, 182, 212, 0.15);
+  color: #22D3EE;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+/* Industrial pulse indicator */
+.live-pulse {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10B981;
+}
+
+.live-pulse::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #10B981;
+  animation: pulse-ring 1.8s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(2.2); opacity: 0; }
+  100% { transform: scale(0.95); opacity: 0; }
+}
+
+/* Tab button styling */
+.nav-tab-btn {
+  padding: 0.65rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #94A3B8;
+  border-radius: 0.5rem;
+  transition: all 0.15s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.nav-tab-btn:hover {
+  color: #F8FAFC;
+  background-color: rgba(51, 65, 85, 0.4);
+}
+
+.nav-tab-btn.active {
+  color: #38BDF8;
+  background-color: rgba(2, 132, 199, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+/* Print Styles for Direct Browser Print */
+@media print {
+  body {
+    background: #FFF !important;
+    color: #000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

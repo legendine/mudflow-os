@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MudFlow OS | Drilling Mud Engineering & Hydraulics Management Suite</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            rig: {
+              950: '#070A10',
+              900: '#0B0F17',
+              850: '#111827',
+              800: '#182234',
+              700: '#243247',
+              600: '#334155'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#0A0E17] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-sky-500 selection:text-white">
+
+  <!-- Top Rig Header Bar -->
+  <header class="bg-rig-900 border-b border-rig-700/80 sticky top-0 z-40 backdrop-blur-md">
+    <div class="max-w-[1720px] mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-4">
+      
+      <!-- Logo & Brand -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-sky-600 via-cyan-500 to-amber-400 p-[1.5px] flex items-center justify-center shadow-lg shadow-sky-950/40">
+          <div class="w-full h-full bg-rig-900 rounded-[7px] flex items-center justify-center">
+            <svg class="w-5 h-5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-extrabold tracking-tight text-white flex items-center gap-1.5">
+              <span>MUDFLOW</span>
+              <span class="text-xs bg-sky-500/20 text-sky-400 px-1.5 py-0.5 rounded border border-sky-500/30 font-mono">OS v2.5</span>
+            </h1>
+            <div class="flex items-center gap-1 text-[11px] font-semibold text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+              <div class="live-pulse"></div>
+              <span>ONLINE</span>
+            </div>
+          </div>
+          <p class="text-[11px] text-slate-400 font-medium">Drilling Mud Engineering & Hydraulics Suite</p>
+        </div>
+      </div>
+
+      <!-- Active Well Context Badge -->
+      <div class="hidden lg:flex items-center gap-3 bg-rig-850 border border-rig-700 px-3.5 py-1.5 rounded-lg text-xs">
+        <div class="text-slate-400">
+          <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">Active Target</span>
+          <span id="hdrWellName" class="font-bold text-white text-sm">Castberg 7220/8-1</span>
+        </div>
+        <div class="h-6 w-px bg-slate-700"></div>
+        <div class="text-slate-400">
+          <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">Rig & Field</span>
+          <span id="hdrRigName" class="text-slate-300 font-mono">Deepsea Nordkapp • Johan Castberg</span>
+        </div>
+        <div class="h-6 w-px bg-slate-700"></div>
+        <div>
+          <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">Operator</span>
+          <span id="hdrOperator" class="text-sky-400 font-semibold">Equinor Energy</span>
+        </div>
+      </div>
+
+      <!-- Well Switcher & Quick Actions -->
+      <div class="flex items-center gap-2.5">
+        <div class="flex items-center gap-1.5">
+          <label for="globalWellSelect" class="text-xs font-semibold text-slate-400 hidden sm:inline">Well:</label>
+          <select id="globalWellSelect" class="bg-rig-950 border border-slate-700 rounded-md text-xs font-mono text-slate-200 px-2.5 py-1.5 focus:outline-none focus:border-sky-500">
+            <!-- Populated via JS -->
+          </select>
+        </div>
+
+        <button id="btnOpenKillSheetModal" onclick="openKillSheetModal()" class="bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-500 hover:to-rose-500 text-white text-xs font-bold px-3 py-1.5 rounded-md flex items-center gap-1.5 shadow-md transition">
+          <svg class="w-3.5 h-3.5 text-amber-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+          <span>Well Control Kill Sheet</span>
+        </button>
+
+        <button id="btnOpenNewReportModal" class="bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-500 hover:to-cyan-500 text-white text-xs font-bold px-3 py-1.5 rounded-md flex items-center gap-1.5 shadow-md transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+          <span>New Daily Report</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Navigation Module Bar -->
+  <nav class="bg-rig-950 border-b border-rig-700/60 sticky top-[57px] z-30">
+    <div class="max-w-[1720px] mx-auto px-4 flex items-center gap-1 overflow-x-auto py-1.5 scrollbar-none">
+      
+      <button data-tab="dashboard" class="nav-tab-btn active">
+        <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+        <span>Overview & Telemetry</span>
+      </button>
+
+      <button data-tab="rheology" class="nav-tab-btn">
+        <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
+        <span>Viscometer & Rheology</span>
+      </button>
+
+      <button data-tab="hydraulics" class="nav-tab-btn">
+        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+        <span>Hydraulics & ECD Profile</span>
+      </button>
+
+      <button data-tab="volumetrics" class="nav-tab-btn">
+        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+        <span>Pit Volumes & Weight-Up</span>
+      </button>
+
+      <button data-tab="solids" class="nav-tab-btn">
+        <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path></svg>
+        <span>Retort & Solids Control</span>
+      </button>
+
+      <button data-tab="reports" class="nav-tab-btn">
+        <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        <span>Daily Reports & Logs</span>
+      </button>
+
+    </div>
+  </nav>
+
+  <!-- Main Workspace Area -->
+  <main class="flex-1 max-w-[1720px] w-full mx-auto p-4 md:p-6 space-y-6">
+
+    <!-- TAB 1: OVERVIEW & TELEMETRY DASHBOARD -->
+    <section id="tab-dashboard" class="tab-content-panel space-y-6">
+      
+      <!-- Live KPI Banner -->
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+        <div class="rig-card p-3">
+          <span class="text-[10px] text-slate-400 uppercase font-bold block">Measured Depth</span>
+          <span id="dashDepthMd" class="text-xl font-extrabold text-white mono-num">12,240 ft</span>
+          <span class="text-[10px] text-slate-400 block mt-0.5">TVD: <span id="dashDepthTvd" class="mono-num text-slate-300">10,550 ft</span></span>
+        </div>
+
+        <div class="rig-card p-3 border-l-4 border-l-sky-500">
+          <span class="text-[10px] text-slate-400 uppercase font-bold block">Mud Weight</span>
+          <span id="dashMudWeight" class="text-xl font-extrabold text-sky-400 mono-num">12.80 ppg</span>
+          <span class="text-[10px] text-slate-400 block mt-0.5">Static Density</span>
+        </div>
+
+        <div class="rig-card p-3 border-l-4 border-l-emerald-500">
+          <span class="text-[10px] text-slate-400 uppercase font-bold block">Circulating ECD</span>
+          <span id="dashEcd" class="text-xl font-extrabold text-emerald-400 mono-num">13.11 ppg</span>
+          <span class="text-[10px] text-emerald-400/80 block mt-0.5">ΔP_ann: +0.31 ppg</span>
+        </div>
+
+        <div class="rig-card p-3">
+          <span class="text-[10px] text-slate-400 uppercase font-bold block">PV / YP</span>
+          <span class="text-xl font-extrabold text-white mono-num"><span id="dashPv">24</span> / <span id="dashYp">18</span></span>
+          <span class="text-[10px] text-slate-400 block mt-0.5">cP / lb/100ft²</span>
+        </div>
+
+        <div class="rig-card p-3">
+          <span class="text-[10px] text-slate-400 uppercase font-bold block">Pump Pressure</span>
+          <span id="dashPumpPress" class="text-xl font-extrabold text-amber-300 mono-num">3,390 psi</span>
+          <span class="text-[10px] text-slate-400 block mt-0.5">Flow: <span id="dashFlowRate" class="mono-num text-slate-300">540 GPM</span></span>
+        </div>
+
+        <div class="rig-card p-3">
+          <span class="text-[10px] text-slate-400 uppercase font-bold block">Bit Hydraulics</span>
+          <span id="dashBitHhp" class="text-xl font-extrabold text-cyan-400 mono-num">466 HP</span>
+          <span class="text-[10px] text-slate-400 block mt-0.5">HSI: <span id="dashHsi" class="mono-num text-slate-300">8.21</span></span>
+        </div>
+
+        <div class="rig-card p-3">
+          <span class="text-[10px] text-slate-400 uppercase font-bold block">Annular Velocity</span>
+          <span id="dashAnnVel" class="text-xl font-extrabold text-white mono-num">139 ft/min</span>
+          <span class="text-[10px] text-emerald-400 block mt-0.5">Laminar Regime</span>
+        </div>
+
+        <div class="rig-card p-3 border-l-4 border-l-purple-500">
+          <span class="text-[10px] text-slate-400 uppercase font-bold block">Solids / LGS</span>
+          <span id="dashLgs" class="text-xl font-extrabold text-purple-300 mono-num">4.20%</span>
+          <span class="text-[10px] text-slate-400 block mt-0.5">HGS: <span id="dashHgs" class="mono-num text-slate-300">16.8%</span></span>
+        </div>
+      </div>
+
+      <!-- Quick Action Cards Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Live Operations Status -->
+        <div class="rig-card p-5 lg:col-span-2 space-y-4">
+          <div class="flex items-center justify-between border-b border-rig-700/80 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+              <h2 class="font-bold text-base text-white">Current Operations & Telemetry Overview</h2>
+            </div>
+            <span id="dashReportNo" class="text-xs font-mono text-sky-400 font-semibold">Report #16 (2026-10-16)</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div class="bg-rig-950 p-3.5 rounded-lg border border-rig-700 space-y-2">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Operation Activity</span>
+              <p id="dashOp" class="text-slate-200 font-medium">Drilling ahead smoothly towards Tubåen reservoir target at 42 ft/hr with 8-1/2 PDC Bit.</p>
+            </div>
+
+            <div class="bg-rig-950 p-3.5 rounded-lg border border-rig-700 space-y-2">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Annular Cleaning & ECD Risk</span>
+              <p class="text-emerald-400 font-medium text-xs">
+                Annular velocity is optimal for cutting transport (>120 ft/min). Equivalent circulating density is 0.31 ppg above static, well within the fracture gradient envelope.
+              </p>
+            </div>
+          </div>
+
+          <!-- Quick Navigation Cards -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+            <button onclick="switchTab('rheology')" class="p-3 bg-rig-900 hover:bg-rig-800 border border-slate-700 rounded-lg text-left transition group">
+              <div class="flex items-center justify-between text-xs font-bold text-slate-300 group-hover:text-cyan-400">
+                <span>Rheology Engine</span>
+                <span>→</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1">Fann 35 dial models & shear curve</p>
+            </button>
+
+            <button onclick="switchTab('hydraulics')" class="p-3 bg-rig-900 hover:bg-rig-800 border border-slate-700 rounded-lg text-left transition group">
+              <div class="flex items-center justify-between text-xs font-bold text-slate-300 group-hover:text-amber-400">
+                <span>Hydraulics</span>
+                <span>→</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1">Bit nozzles, TFA & ECD profile</p>
+            </button>
+
+            <button onclick="switchTab('volumetrics')" class="p-3 bg-rig-900 hover:bg-rig-800 border border-slate-700 rounded-lg text-left transition group">
+              <div class="flex items-center justify-between text-xs font-bold text-slate-300 group-hover:text-emerald-400">
+                <span>Weight-Up & Dilution</span>
+                <span>→</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1">Barite / Hematite sack formulas</p>
+            </button>
+
+            <button onclick="switchTab('reports')" class="p-3 bg-rig-900 hover:bg-rig-800 border border-slate-700 rounded-lg text-left transition group">
+              <div class="flex items-center justify-between text-xs font-bold text-slate-300 group-hover:text-purple-400">
+                <span>Daily Reports</span>
+                <span>→</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1">Download standard PDF logs</p>
+            </button>
+          </div>
+        </div>
+
+        <!-- System Volume Accounting Widget -->
+        <div class="rig-card p-5 space-y-4">
+          <div class="flex items-center justify-between border-b border-rig-700/80 pb-3">
+            <h2 class="font-bold text-base text-white">Pit Volume Status</h2>
+            <span class="telemetry-badge badge-cyan text-[10px]">ACTIVE CIRCULATION</span>
+          </div>
+
+          <div class="space-y-3">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400">Active Pits Volume:</span>
+              <span id="dashActiveVol" class="font-bold font-mono text-white">710 bbl</span>
+            </div>
+            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+              <div class="bg-sky-500 h-full w-[41%]"></div>
+            </div>
+
+            <div class="flex items-center justify-between text-xs pt-1">
+              <span class="text-slate-400">Total System Volume:</span>
+              <span id="dashTotalVol" class="font-bold font-mono text-cyan-400">1,724 bbl</span>
+            </div>
+
+            <div class="p-3 bg-rig-950 rounded-lg border border-slate-700/80 space-y-1.5 text-xs">
+              <div class="flex justify-between">
+                <span class="text-slate-400">Active Pit Room:</span>
+                <span class="font-mono text-emerald-400 font-semibold">+290 bbl available</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Trip Tank:</span>
+                <span class="font-mono text-slate-300">46 bbl (Stable)</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Barite on Location:</span>
+                <span class="font-mono text-amber-300 font-semibold">940 sacks (42.6 MT)</span>
+              </div>
+            </div>
+
+            <button onclick="switchTab('volumetrics')" class="w-full py-2 bg-rig-950 hover:bg-slate-800 border border-slate-700 text-xs text-sky-400 font-semibold rounded-lg transition text-center">
+              Open Volume & Weight-Up Engine →
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- TAB 2: VISCOMETER & RHEOLOGY ENGINE -->
+    <section id="tab-rheology" class="tab-content-panel hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Controls & Input Form (4 Cols) -->
+        <div class="lg:col-span-5 space-y-5">
+          <div class="rig-card p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-rig-700/80 pb-3">
+              <div>
+                <h2 class="font-bold text-base text-white">Fann 35 Viscometer Readings</h2>
+                <p class="text-xs text-slate-400">API Recommended Practice 13D / 13B Standard</p>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button type="button" id="btnPresetObm" class="text-[10px] bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded text-sky-400 font-semibold border border-slate-700">OBM</button>
+                <button type="button" id="btnPresetWbm" class="text-[10px] bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded text-emerald-400 font-semibold border border-slate-700">WBM</button>
+                <button type="button" id="btnPresetHpht" class="text-[10px] bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded text-amber-400 font-semibold border border-slate-700">HPHT</button>
+              </div>
+            </div>
+
+            <!-- Mud Weight Input -->
+            <div>
+              <label for="rheoMudWeight" class="rig-input-label">Mud Weight (ppg)</label>
+              <input type="number" id="rheoMudWeight" step="0.1" value="12.8" class="rig-input text-amber-300 font-bold">
+            </div>
+
+            <!-- 6 Standard RPM Dial Readings Grid -->
+            <div>
+              <span class="rig-input-label">RPM Rotor Dial Deflections (θ degrees)</span>
+              <div class="grid grid-cols-3 gap-3">
+                <div>
+                  <label for="rheoR600" class="text-[10px] font-bold text-slate-400 block mb-1">600 RPM</label>
+                  <input type="number" id="rheoR600" value="68" class="rig-input text-center">
+                </div>
+                <div>
+                  <label for="rheoR300" class="text-[10px] font-bold text-slate-400 block mb-1">300 RPM</label>
+                  <input type="number" id="rheoR300" value="42" class="rig-input text-center">
+                </div>
+                <div>
+                  <label for="rheoR200" class="text-[10px] font-bold text-slate-400 block mb-1">200 RPM</label>
+                  <input type="number" id="rheoR200" value="32" class="rig-input text-center">
+                </div>
+                <div>
+                  <label for="rheoR100" class="text-[10px] font-bold text-slate-400 block mb-1">100 RPM</label>
+                  <input type="number" id="rheoR100" value="20" class="rig-input text-center">
+                </div>
+                <div>
+                  <label for="rheoR6" class="text-[10px] font-bold text-slate-400 block mb-1">6 RPM</label>
+                  <input type="number" id="rheoR6" value="7" class="rig-input text-center">
+                </div>
+                <div>
+                  <label for="rheoR3" class="text-[10px] font-bold text-slate-400 block mb-1">3 RPM</label>
+                  <input type="number" id="rheoR3" value="5" class="rig-input text-center">
+                </div>
+              </div>
+            </div>
+
+            <!-- Gel Strengths Grid -->
+            <div class="pt-1">
+              <span class="rig-input-label">Thixotropic Gel Strengths (lb / 100 ft²)</span>
+              <div class="grid grid-cols-3 gap-3">
+                <div>
+                  <label for="rheoGel10s" class="text-[10px] font-bold text-slate-400 block mb-1">10-Second</label>
+                  <input type="number" id="rheoGel10s" value="7" class="rig-input text-center text-cyan-300">
+                </div>
+                <div>
+                  <label for="rheoGel10m" class="text-[10px] font-bold text-slate-400 block mb-1">10-Minute</label>
+                  <input type="number" id="rheoGel10m" value="12" class="rig-input text-center text-cyan-300">
+                </div>
+                <div>
+                  <label for="rheoGel30m" class="text-[10px] font-bold text-slate-400 block mb-1">30-Minute</label>
+                  <input type="number" id="rheoGel30m" value="15" class="rig-input text-center text-cyan-300">
+                </div>
+              </div>
+            </div>
+
+            <!-- Live Solver Trigger -->
+            <button onclick="calculateRheology()" class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-lg shadow-md transition flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              <span>Recalculate Rheology</span>
+            </button>
+
+            <!-- AI Mud Doctor Diagnostic Button -->
+            <button type="button" onclick="askAiMudDoctor()" class="w-full py-2.5 bg-gradient-to-r from-purple-600 via-indigo-600 to-sky-600 hover:from-purple-500 hover:to-sky-500 text-white font-bold text-xs rounded-lg shadow-lg shadow-purple-950/40 transition flex items-center justify-center gap-2 border border-purple-400/30">
+              <svg class="w-4 h-4 text-purple-200 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <span>Ask AI Mud Doctor</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Outputs & Chart Visualizer (7 Cols) -->
+        <div class="lg:col-span-7 space-y-5">
+          
+          <!-- Rheological Parameters Cards -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="rig-card p-3.5 border-l-4 border-l-cyan-500">
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Plastic Viscosity</span>
+              <span id="resPv" class="text-xl font-bold text-cyan-400 mono-num">26.0 cP</span>
+              <span class="text-[10px] text-slate-400 block mt-0.5">PV = θ600 - θ300</span>
+            </div>
+
+            <div class="rig-card p-3.5 border-l-4 border-l-emerald-500">
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Yield Point</span>
+              <span id="resYp" class="text-xl font-bold text-emerald-400 mono-num">16.0 lb/100ft²</span>
+              <span class="text-[10px] text-slate-400 block mt-0.5">YP = 2*θ300 - θ600</span>
+            </div>
+
+            <div class="rig-card p-3.5">
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Apparent Viscosity</span>
+              <span id="resAv" class="text-xl font-bold text-white mono-num">34.0 cP</span>
+              <span class="text-[10px] text-slate-400 block mt-0.5">AV = θ600 / 2</span>
+            </div>
+
+            <div class="rig-card p-3.5">
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">YP / PV Ratio</span>
+              <span id="resYpPv" class="text-xl font-bold text-amber-300 mono-num">0.62</span>
+              <span class="text-[10px] text-slate-400 block mt-0.5">Opt: 0.75 - 1.25</span>
+            </div>
+          </div>
+
+          <!-- Non-Newtonian Flow Models Matrix -->
+          <div class="rig-card p-4 space-y-3">
+            <div class="flex items-center justify-between border-b border-rig-700/80 pb-2">
+              <span class="text-xs font-bold text-white uppercase tracking-wider">Rheological Flow Models Fitting</span>
+              <span id="resGelTypeBadge" class="telemetry-badge badge-laminar">FLAT GELS</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+              <div class="bg-rig-950 p-3 rounded border border-slate-700/80 space-y-1.5">
+                <div class="flex justify-between items-center text-sky-400 font-bold border-b border-slate-800 pb-1">
+                  <span>Herschel-Bulkley (API 13D)</span>
+                  <span id="resR2Hb" class="text-[10px] text-emerald-400">R² = 0.998</span>
+                </div>
+                <div class="flex justify-between text-slate-300">
+                  <span>Yield Stress (τ₀):</span>
+                  <span id="resTau0" class="text-white font-bold">4.26 lb/100ft²</span>
+                </div>
+                <div class="flex justify-between text-slate-300">
+                  <span>Flow Index (n_hb):</span>
+                  <span id="resNHb" class="text-white">0.5921</span>
+                </div>
+                <div class="flex justify-between text-slate-300">
+                  <span>Consistency (K_hb):</span>
+                  <span id="resKHb" class="text-white">1.0412</span>
+                </div>
+              </div>
+
+              <div class="bg-rig-950 p-3 rounded border border-slate-700/80 space-y-1.5">
+                <div class="flex justify-between items-center text-purple-400 font-bold border-b border-slate-800 pb-1">
+                  <span>Power Law (Ostwald)</span>
+                  <span id="resR2Pl" class="text-[10px] text-slate-400">R² = 0.984</span>
+                </div>
+                <div class="flex justify-between text-slate-300">
+                  <span>Flow Behavior Index (n):</span>
+                  <span id="resNIndex" class="text-white">0.6953</span>
+                </div>
+                <div class="flex justify-between text-slate-300">
+                  <span>Consistency Factor (K):</span>
+                  <span id="resKIndex" class="text-white">0.5982</span>
+                </div>
+                <div class="flex justify-between text-slate-300">
+                  <span>Bingham Plastic Fit:</span>
+                  <span id="resR2Bp" class="text-[10px] text-slate-400">R² = 0.961</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Rheology Curve Chart -->
+          <div class="rig-card p-4 space-y-2">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-bold text-white">Dynamic Rheology Curve (Shear Rate vs. Shear Stress)</h3>
+                <p class="text-[11px] text-slate-400">Compare experimental Fann 35 dial points against Bingham, Power Law, and Herschel-Bulkley fits</p>
+              </div>
+            </div>
+            <div class="h-80 w-full relative">
+              <canvas id="rheologyChartCanvas"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- TAB 3: HYDRAULICS & PRESSURE PROFILE -->
+    <section id="tab-hydraulics" class="tab-content-panel hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Hydraulics Inputs (5 Cols) -->
+        <div class="lg:col-span-5 space-y-5">
+          <div class="rig-card p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-rig-700/80 pb-3">
+              <div>
+                <h2 class="font-bold text-base text-white">Hydraulics & Well Geometry</h2>
+                <p class="text-xs text-slate-400">Circulation parameters, ECD & Jet nozzle configuration</p>
+              </div>
+            </div>
+
+            <!-- Depths & Mud Weight -->
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label for="hydMudWeight" class="rig-input-label">Mud Wt (ppg)</label>
+                <input type="number" id="hydMudWeight" step="0.1" value="12.8" class="rig-input font-bold text-sky-400">
+              </div>
+              <div>
+                <label for="hydTvd" class="rig-input-label">TVD (ft)</label>
+                <input type="number" id="hydTvd" value="10550" class="rig-input">
+              </div>
+              <div>
+                <label for="hydMd" class="rig-input-label">MD (ft)</label>
+                <input type="number" id="hydMd" value="12240" class="rig-input">
+              </div>
+            </div>
+
+            <!-- Circulation Parameters -->
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label for="hydFlowRate" class="rig-input-label">Flow Rate (GPM)</label>
+                <input type="number" id="hydFlowRate" value="540" class="rig-input text-amber-300 font-bold">
+              </div>
+              <div>
+                <label for="hydPumpPress" class="rig-input-label">Pump Press (psi)</label>
+                <input type="number" id="hydPumpPress" value="3390" class="rig-input text-amber-300 font-bold">
+              </div>
+            </div>
+
+            <!-- Hole & String Dimensions -->
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label for="hydHoleId" class="rig-input-label">Hole ID (in)</label>
+                <input type="number" id="hydHoleId" step="0.125" value="8.5" class="rig-input">
+              </div>
+              <div>
+                <label for="hydDpOd" class="rig-input-label">DP OD (in)</label>
+                <input type="number" id="hydDpOd" step="0.125" value="5.0" class="rig-input">
+              </div>
+              <div>
+                <label for="hydDcOd" class="rig-input-label">DC OD (in)</label>
+                <input type="number" id="hydDcOd" step="0.125" value="6.5" class="rig-input">
+              </div>
+            </div>
+
+            <!-- Bit Nozzle Matrix -->
+            <div class="space-y-2 pt-1 border-t border-slate-800">
+              <div class="flex items-center justify-between">
+                <span class="rig-input-label mb-0">Bit Nozzle Sizes (32nds of an inch)</span>
+                <div class="flex items-center gap-1">
+                  <button type="button" id="btnNozzle3x12" class="text-[10px] bg-slate-800 hover:bg-slate-700 px-1.5 py-0.5 rounded text-slate-300 font-mono">3x12</button>
+                  <button type="button" id="btnNozzle3x14" class="text-[10px] bg-slate-800 hover:bg-slate-700 px-1.5 py-0.5 rounded text-sky-400 font-mono">3x14</button>
+                  <button type="button" id="btnNozzle4x14" class="text-[10px] bg-slate-800 hover:bg-slate-700 px-1.5 py-0.5 rounded text-amber-400 font-mono">4x14</button>
+                </div>
+              </div>
+
+              <!-- Interactive Dynamic Nozzles Badges -->
+              <div id="nozzlesListContainer" class="flex flex-wrap items-center gap-2">
+                <!-- Injected via JS -->
+              </div>
+              <button type="button" id="btnAddNozzle" class="text-xs text-sky-400 hover:text-sky-300 font-semibold flex items-center gap-1 pt-1">
+                + Add Another Nozzle
+              </button>
+            </div>
+
+            <!-- Annular Pressure Loss Override (Optional) -->
+            <div>
+              <label for="hydAnnularLoss" class="rig-input-label">Annular Pressure Loss Override (psi)</label>
+              <input type="number" id="hydAnnularLoss" placeholder="Auto-calculated from rheology if blank" class="rig-input placeholder:text-slate-600">
+            </div>
+
+            <button onclick="calculateHydraulics()" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-lg shadow-md transition flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+              <span>Solve Hydraulics & ECD Profile</span>
+            </button>
+          </div>
+
+          <!-- Well Control & Kill Sheet Quick Launch Card -->
+          <div class="rig-card p-4 border border-amber-500/30 bg-gradient-to-r from-amber-950/30 via-rig-900 to-rig-950 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-white uppercase tracking-wider">Well Control Kill Sheet</h4>
+                <p class="text-[11px] text-slate-400">KWM, ICP &amp; FCP Influx Circulation Calculations</p>
+              </div>
+            </div>
+            <button type="button" onclick="openKillSheetModal()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-lg transition shadow flex items-center gap-1.5 whitespace-nowrap">
+              <span>Open Kill Sheet</span>
+              <span>&rarr;</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Hydraulics KPIs & Charts (7 Cols) -->
+        <div class="lg:col-span-7 space-y-5">
+          
+          <!-- Key Output Metrics -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="rig-card p-3.5 border-l-4 border-l-emerald-500">
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Circulating ECD</span>
+              <span id="resEcd" class="text-xl font-bold text-emerald-400 mono-num">13.11 ppg</span>
+              <span class="text-[10px] text-slate-400 block mt-0.5">Hyd: <span id="resHydrostatic" class="mono-num text-slate-300">7,022 psi</span></span>
+            </div>
+
+            <div class="rig-card p-3.5 border-l-4 border-l-sky-500">
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Annular Velocity</span>
+              <span id="resAnnVelDp" class="text-xl font-bold text-sky-400 mono-num">139.4 ft/min</span>
+              <span class="text-[10px] text-slate-400 block mt-0.5">DC: <span id="resAnnVelDc" class="mono-num text-slate-300">188 ft/min</span></span>
+            </div>
+
+            <div class="rig-card p-3.5 border-l-4 border-l-amber-500">
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Bit Jet Velocity</span>
+              <span id="resBitVelocity" class="text-xl font-bold text-amber-300 mono-num">384.3 ft/s</span>
+              <span class="text-[10px] text-slate-400 block mt-0.5">TFA: <span id="resTfa" class="mono-num text-slate-300">0.451 in²</span></span>
+            </div>
+
+            <div class="rig-card p-3.5 border-l-4 border-l-purple-500">
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Bit Hydraulic Power</span>
+              <span id="resHhp" class="text-xl font-bold text-purple-300 mono-num">465.7 HP</span>
+              <span class="text-[10px] text-slate-400 block mt-0.5">HSI: <span id="resHsi" class="mono-num text-slate-300">8.21</span></span>
+            </div>
+          </div>
+
+          <!-- Hydraulics Diagnostics Grid -->
+          <div class="rig-card p-4 space-y-3">
+            <div class="flex items-center justify-between border-b border-rig-700/80 pb-2">
+              <span class="text-xs font-bold text-white uppercase tracking-wider">Bit Optimization & Flow Regime Diagnostics</span>
+              <span id="resFlowRegimeBadge" class="telemetry-badge badge-laminar">LAMINAR FLOW</span>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+              <div class="bg-rig-950 p-2.5 rounded border border-slate-700/80">
+                <span class="text-[10px] text-slate-400 block">Bit Pressure Drop</span>
+                <span id="resBitDrop" class="text-sm font-bold text-white">1,479 psi</span>
+                <span id="resBitPercent" class="text-[10px] text-amber-400 block mt-0.5">43.6% of pump</span>
+              </div>
+
+              <div class="bg-rig-950 p-2.5 rounded border border-slate-700/80">
+                <span class="text-[10px] text-slate-400 block">Jet Impact Force</span>
+                <span id="resImpactForce" class="text-sm font-bold text-white">1,380 lbf</span>
+                <span class="text-[10px] text-slate-400 block mt-0.5">Bottom cleaning</span>
+              </div>
+
+              <div class="bg-rig-950 p-2.5 rounded border border-slate-700/80">
+                <span class="text-[10px] text-slate-400 block">Annular Pressure Loss</span>
+                <span id="resAnnularLoss" class="text-sm font-bold text-white">168 psi</span>
+                <span class="text-[10px] text-slate-400 block mt-0.5">Friction loss</span>
+              </div>
+
+              <div class="bg-rig-950 p-2.5 rounded border border-slate-700/80">
+                <span class="text-[10px] text-slate-400 block">Reynolds Number</span>
+                <span id="resReynolds" class="text-sm font-bold text-white">1,420</span>
+                <span class="text-[10px] text-emerald-400 block mt-0.5">Critical: 2,100</span>
+              </div>
+            </div>
+
+            <div class="p-2.5 bg-slate-900 rounded border border-slate-800 text-xs flex items-center justify-between">
+              <span class="text-slate-400">Cutting Transport Assessment:</span>
+              <span id="resHoleCleaning" class="font-bold text-emerald-400">Excellent Cutting Transport (>140 ft/min)</span>
+            </div>
+          </div>
+
+          <!-- Inverted Pressure Profile Depth Chart -->
+          <div class="rig-card p-4 space-y-2">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-bold text-white">Wellbore Pressure Profile (Depth TVD vs. Pressure)</h3>
+              <span class="text-[11px] text-slate-400 font-mono">0 ft Surface → 10,550 ft TVD</span>
+            </div>
+            <div class="h-80 w-full relative">
+              <canvas id="hydraulicsChartCanvas"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- TAB 4: PIT VOLUME & WEIGHT-UP / DILUTION -->
+    <section id="tab-volumetrics" class="tab-content-panel hidden space-y-6">
+      
+      <!-- Volumetrics Grid: 3 Sub-engines -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- 1. Hole & Surface Capacity Calculator -->
+        <div class="rig-card p-5 space-y-4">
+          <div class="flex items-center justify-between border-b border-rig-700/80 pb-3">
+            <h2 class="font-bold text-base text-white">Hole & System Volumes</h2>
+            <span class="text-xs text-sky-400 font-semibold font-mono">CAPACITY</span>
+          </div>
+
+          <div class="space-y-3">
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label for="volHoleId" class="rig-input-label">Hole ID (in)</label>
+                <input type="number" id="volHoleId" step="0.125" value="8.5" class="rig-input">
+              </div>
+              <div>
+                <label for="volHoleLength" class="rig-input-label">Total MD (ft)</label>
+                <input type="number" id="volHoleLength" value="12240" class="rig-input">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2">
+              <div>
+                <label for="volDpOd" class="rig-input-label">DP OD (in)</label>
+                <input type="number" id="volDpOd" value="5.0" class="rig-input">
+              </div>
+              <div>
+                <label for="volDpId" class="rig-input-label">DP ID (in)</label>
+                <input type="number" id="volDpId" value="4.276" class="rig-input">
+              </div>
+              <div>
+                <label for="volDpLength" class="rig-input-label">DP Len (ft)</label>
+                <input type="number" id="volDpLength" value="11640" class="rig-input">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2">
+              <div>
+                <label for="volDcOd" class="rig-input-label">DC OD (in)</label>
+                <input type="number" id="volDcOd" value="6.5" class="rig-input">
+              </div>
+              <div>
+                <label for="volDcId" class="rig-input-label">DC ID (in)</label>
+                <input type="number" id="volDcId" value="2.813" class="rig-input">
+              </div>
+              <div>
+                <label for="volDcLength" class="rig-input-label">DC Len (ft)</label>
+                <input type="number" id="volDcLength" value="600" class="rig-input">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-800">
+              <div>
+                <label for="volActivePits" class="rig-input-label">Active (bbl)</label>
+                <input type="number" id="volActivePits" value="710" class="rig-input font-bold text-sky-400">
+              </div>
+              <div>
+                <label for="volReservePits" class="rig-input-label">Reserve (bbl)</label>
+                <input type="number" id="volReservePits" value="410" class="rig-input">
+              </div>
+              <div>
+                <label for="volTripTank" class="rig-input-label">Trip Tk (bbl)</label>
+                <input type="number" id="volTripTank" value="46" class="rig-input">
+              </div>
+            </div>
+
+            <!-- Volume Breakdown Results -->
+            <div class="bg-rig-950 p-3 rounded-lg border border-slate-700/80 text-xs font-mono space-y-1.5 pt-2">
+              <div class="flex justify-between text-slate-300">
+                <span>Drill String Internal:</span>
+                <span id="resTotalStringCap" class="text-white font-bold">211.2 bbl</span>
+              </div>
+              <div class="flex justify-between text-slate-300">
+                <span>Total Annular Volume:</span>
+                <span id="resTotalAnnVol" class="text-white font-bold">346.8 bbl</span>
+              </div>
+              <div class="flex justify-between text-sky-400 font-bold border-t border-slate-800 pt-1">
+                <span>Total Hole Volume:</span>
+                <span id="resTotalHoleVol">558.0 bbl</span>
+              </div>
+              <div class="flex justify-between text-emerald-400 font-bold">
+                <span>Active Circulating Vol:</span>
+                <span id="resCirculatingVol">1,268.0 bbl</span>
+              </div>
+              <div class="flex justify-between text-purple-300 font-bold border-t border-slate-800 pt-1">
+                <span>Total System on Rig:</span>
+                <span id="resTotalSystemVol">1,724.0 bbl</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Weight-Up Calculator (Barite / Hematite) -->
+        <div class="rig-card p-5 space-y-4">
+          <div class="flex items-center justify-between border-b border-rig-700/80 pb-3">
+            <h2 class="font-bold text-base text-white">Weight-Up Engine</h2>
+            <span class="text-xs text-amber-400 font-semibold font-mono">DENSITY INCREASE</span>
+          </div>
+
+          <div class="space-y-3">
+            <!-- Weighting Material Radio Select -->
+            <div>
+              <span class="rig-input-label">Weighting Material</span>
+              <div class="grid grid-cols-2 gap-3 pt-1">
+                <label class="flex items-center gap-2 bg-rig-950 p-2.5 rounded-lg border border-slate-700 cursor-pointer hover:border-amber-500">
+                  <input type="radio" name="wuAgent" value="barite" checked class="text-amber-500 focus:ring-0">
+                  <span class="text-xs font-bold text-slate-200">Barite (SG 4.20)</span>
+                </label>
+                <label class="flex items-center gap-2 bg-rig-950 p-2.5 rounded-lg border border-slate-700 cursor-pointer hover:border-rose-500">
+                  <input type="radio" name="wuAgent" value="hematite" class="text-rose-500 focus:ring-0">
+                  <span class="text-xs font-bold text-slate-200">Hematite (SG 5.00)</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label for="wuInitialMw" class="rig-input-label">Current MW (ppg)</label>
+                <input type="number" id="wuInitialMw" step="0.1" value="12.4" class="rig-input font-bold text-slate-200">
+              </div>
+              <div>
+                <label for="wuTargetMw" class="rig-input-label">Target MW (ppg)</label>
+                <input type="number" id="wuTargetMw" step="0.1" value="12.8" class="rig-input font-bold text-amber-400">
+              </div>
+            </div>
+
+            <div>
+              <label for="wuVolume" class="rig-input-label">Mud Volume to Weight Up (bbl)</label>
+              <input type="number" id="wuVolume" value="710" class="rig-input">
+            </div>
+
+            <!-- Weight-up Output Box -->
+            <div class="bg-rig-950 p-3.5 rounded-lg border border-amber-500/30 text-xs font-mono space-y-2">
+              <div class="flex justify-between items-center pb-1 border-b border-slate-800">
+                <span class="text-slate-400">Selected Agent:</span>
+                <span id="resWuAgent" class="font-bold text-amber-300">Barite (SG 4.20)</span>
+              </div>
+              <div class="flex justify-between text-slate-300">
+                <span>Sacks / 100 bbl:</span>
+                <span id="resWuSacksPer100" class="text-white font-bold">26.5 sx/100 bbl</span>
+              </div>
+              <div class="flex justify-between text-amber-400 font-extrabold text-sm border-t border-slate-800 pt-1">
+                <span>Total 100-lb Sacks:</span>
+                <span id="resWuTotalSacks">188 sx</span>
+              </div>
+              <div class="flex justify-between text-slate-300">
+                <span>Metric Tonnage:</span>
+                <span id="resWuMetricTons" class="text-white">8.53 MT</span>
+              </div>
+              <div class="flex justify-between text-slate-300">
+                <span>Volume Expansion:</span>
+                <span id="resWuVolIncrease" class="text-emerald-400">+12.8 bbl</span>
+              </div>
+              <div class="flex justify-between text-slate-300">
+                <span>Final Diluted Volume:</span>
+                <span id="resWuFinalVol" class="text-white font-bold">722.8 bbl</span>
+              </div>
+              <div class="flex justify-between text-slate-400 pt-1 border-t border-slate-800">
+                <span>Estimated Material Cost:</span>
+                <span id="resWuCost" class="text-amber-300 font-bold">$3,478</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Base Fluid Dilution Calculator -->
+        <div class="rig-card p-5 space-y-4">
+          <div class="flex items-center justify-between border-b border-rig-700/80 pb-3">
+            <h2 class="font-bold text-base text-white">Base Fluid Dilution</h2>
+            <span class="text-xs text-cyan-400 font-semibold font-mono">DILUTION / LGS CUT</span>
+          </div>
+
+          <div class="space-y-3">
+            <div>
+              <label for="dilBaseFluid" class="rig-input-label">Base Fluid Type</label>
+              <select id="dilBaseFluid" class="rig-input text-xs font-sans">
+                <option value="base_oil" selected>Synthetic Base Oil (6.80 ppg)</option>
+                <option value="diesel">Diesel Fuel (7.00 ppg)</option>
+                <option value="fresh_water">Fresh Water (8.33 ppg)</option>
+                <option value="sea_water">Sea Water (8.60 ppg)</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label for="dilInitialMw" class="rig-input-label">Current MW (ppg)</label>
+                <input type="number" id="dilInitialMw" step="0.1" value="12.8" class="rig-input">
+              </div>
+              <div>
+                <label for="dilTargetMw" class="rig-input-label">Target MW (ppg)</label>
+                <input type="number" id="dilTargetMw" step="0.1" value="12.4" class="rig-input text-cyan-300 font-bold">
+              </div>
+            </div>
+
+            <div>
+              <label for="dilVolume" class="rig-input-label">System Volume (bbl)</label>
+              <input type="number" id="dilVolume" value="710" class="rig-input">
+            </div>
+
+            <!-- Optional LGS Cut Inputs -->
+            <div class="grid grid-cols-2 gap-3 pt-1 border-t border-slate-800">
+              <div>
+                <label for="dilCurrentLgs" class="rig-input-label">Current LGS (% vol)</label>
+                <input type="number" id="dilCurrentLgs" step="0.1" value="5.8" class="rig-input text-rose-300">
+              </div>
+              <div>
+                <label for="dilTargetLgs" class="rig-input-label">Target LGS (% vol)</label>
+                <input type="number" id="dilTargetLgs" step="0.1" value="4.5" class="rig-input text-emerald-300">
+              </div>
+            </div>
+
+            <!-- Dilution Results -->
+            <div class="bg-rig-950 p-3.5 rounded-lg border border-cyan-500/30 text-xs font-mono space-y-1.5">
+              <div class="flex justify-between text-slate-300">
+                <span>Base Fluid Density:</span>
+                <span id="resDilBaseDensity" class="text-white font-bold">6.80 ppg</span>
+              </div>
+              <div class="flex justify-between text-cyan-300 font-bold">
+                <span>Base Volume for Density Cut:</span>
+                <span id="resDilVolDensity">50.7 bbl</span>
+              </div>
+              <div class="flex justify-between text-slate-300">
+                <span>Final Volume after Density Cut:</span>
+                <span id="resDilFinalVolDensity">760.7 bbl</span>
+              </div>
+              <div class="flex justify-between text-purple-300 font-bold border-t border-slate-800 pt-1">
+                <span>Base Volume for LGS Cut:</span>
+                <span id="resDilVolLgs">205.1 bbl</span>
+              </div>
+              <div class="flex justify-between text-amber-300 font-bold">
+                <span>Barite to restore MW after LGS cut:</span>
+                <span id="resDilBariteForLgs">815 sx</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- TAB 5: RETORT & SOLIDS CONTROL -->
+    <section id="tab-solids" class="tab-content-panel hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Retort Form Inputs (4 Cols) -->
+        <div class="lg:col-span-4 space-y-5">
+          <div class="rig-card p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-rig-700/80 pb-3">
+              <div>
+                <h2 class="font-bold text-base text-white">Retort & Solids Test Readings</h2>
+                <p class="text-xs text-slate-400">Distillation kit phase & solids partitioning</p>
+              </div>
+            </div>
+
+            <!-- Retort Percentages -->
+            <div class="space-y-3">
+              <div>
+                <label for="retWater" class="rig-input-label">Water Phase (% vol)</label>
+                <input type="number" id="retWater" step="0.1" value="13.8" class="rig-input text-blue-400 font-bold">
+              </div>
+              <div>
+                <label for="retOil" class="rig-input-label">Oil Phase (% vol)</label>
+                <input type="number" id="retOil" step="0.1" value="65.2" class="rig-input text-sky-400 font-bold">
+              </div>
+              <div>
+                <label for="retSolids" class="rig-input-label">Total Solids (% vol - auto balanced)</label>
+                <input type="number" id="retSolids" step="0.1" value="21.0" class="rig-input text-amber-400 font-bold">
+              </div>
+            </div>
+
+            <!-- Additional Lab Tests -->
+            <div class="grid grid-cols-2 gap-3 pt-1 border-t border-slate-800">
+              <div>
+                <label for="retMw" class="rig-input-label">Mud Wt (ppg)</label>
+                <input type="number" id="retMw" step="0.1" value="12.8" class="rig-input font-bold text-white">
+              </div>
+              <div>
+                <label for="retOilSg" class="rig-input-label">Base Oil SG</label>
+                <input type="number" id="retOilSg" step="0.01" value="0.84" class="rig-input">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label for="retMbt" class="rig-input-label">MBT (ppb bentonite)</label>
+                <input type="number" id="retMbt" step="0.5" value="10.0" class="rig-input text-purple-300 font-bold">
+              </div>
+              <div>
+                <label for="retChlorides" class="rig-input-label">Chlorides (mg/L)</label>
+                <input type="number" id="retChlorides" step="100" value="19800" class="rig-input">
+              </div>
+            </div>
+
+            <button onclick="analyzeSolids()" class="w-full py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-lg shadow-md transition flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+              <span>Analyze Retort & Solids</span>
+            </button>
+
+            <!-- AI Mud Doctor Diagnostic Button -->
+            <button type="button" onclick="askAiMudDoctor()" class="w-full py-2.5 bg-gradient-to-r from-purple-600 via-indigo-600 to-sky-600 hover:from-purple-500 hover:to-sky-500 text-white font-bold text-xs rounded-lg shadow-lg shadow-purple-950/40 transition flex items-center justify-center gap-2 border border-purple-400/30">
+              <svg class="w-4 h-4 text-purple-200 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <span>Ask AI Mud Doctor</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Solids Outputs & Doughnut Chart (8 Cols) -->
+        <div class="lg:col-span-8 space-y-5">
+          
+          <!-- Key Solids KPIs -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="rig-card p-3.5 border-l-4 border-l-amber-500">
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Average Solids SG</span>
+              <span id="resRetAsg" class="text-xl font-bold text-amber-400 mono-num">3.88</span>
+              <span class="text-[10px] text-slate-400 block mt-0.5">Barite: 4.2 | LGS: 2.6</span>
+            </div>
+
+            <div class="rig-card p-3.5 border-l-4 border-l-sky-500">
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">High Gravity Solids</span>
+              <span id="resRetHgsPct" class="text-xl font-bold text-sky-400 mono-num">16.80 %</span>
+              <span id="resRetHgsPpb" class="text-[10px] text-slate-300 mono-num block mt-0.5">246.9 ppb</span>
+            </div>
+
+            <div class="rig-card p-3.5 border-l-4 border-l-rose-500">
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Low Gravity Solids</span>
+              <span id="resRetLgsPct" class="text-xl font-bold text-rose-400 mono-num">4.20 %</span>
+              <span id="resRetLgsPpb" class="text-[10px] text-slate-300 mono-num block mt-0.5">38.2 ppb</span>
+            </div>
+
+            <div class="rig-card p-3.5 border-l-4 border-l-purple-500">
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Active Clay (MBT)</span>
+              <span id="resRetActiveClay" class="text-xl font-bold text-purple-300 mono-num">1.10 %</span>
+              <span class="text-[10px] text-slate-400 block mt-0.5">Ratio: <span id="resRetClayRatio" class="mono-num text-slate-300">26.2%</span></span>
+            </div>
+          </div>
+
+          <!-- Visual Phase Breakdown & Recommendations -->
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+            
+            <!-- Chart Container (5 Cols) -->
+            <div class="md:col-span-5 rig-card p-4 space-y-2">
+              <div class="flex items-center justify-between">
+                <h3 class="text-xs font-bold text-white uppercase tracking-wider">Phase Distribution</h3>
+                <span id="resRetOwr" class="text-xs font-mono font-bold text-sky-400">82/18 OWR</span>
+              </div>
+              <div class="h-64 w-full relative">
+                <canvas id="solidsChartCanvas"></canvas>
+              </div>
+            </div>
+
+            <!-- Diagnostics & Equipment Rules (7 Cols) -->
+            <div class="md:col-span-7 rig-card p-4 space-y-3">
+              <div class="flex items-center justify-between border-b border-rig-700/80 pb-2">
+                <span class="text-xs font-bold text-white uppercase tracking-wider">Solids Control Diagnostics</span>
+                <span id="resRetLgsBadge" class="telemetry-badge badge-laminar">OPTIMAL LGS (&lt;5.5%)</span>
+              </div>
+
+              <div class="space-y-2.5 text-xs font-mono">
+                <div class="bg-rig-950 p-2.5 rounded border border-slate-700/80 flex justify-between">
+                  <span class="text-slate-400">Inactive Drill Solids:</span>
+                  <span id="resRetInactiveSolids" class="text-white font-bold">3.10 % vol</span>
+                </div>
+                <div class="bg-rig-950 p-2.5 rounded border border-slate-700/80 flex justify-between">
+                  <span class="text-slate-400">Solids Removal Status:</span>
+                  <span id="resRetEfficiency" class="text-emerald-400 font-bold">Excellent (Solids within target window)</span>
+                </div>
+              </div>
+
+              <div class="p-3 bg-slate-900 rounded-lg border border-slate-800 text-xs space-y-1">
+                <span class="font-bold text-slate-300 uppercase tracking-wider text-[10px] block">Field Recommendation</span>
+                <p id="resRetRecommendation" class="text-slate-300">
+                  OPTIMAL: LGS maintained at 4.2% vol (well below 5% target). Solids control equipment operating with high efficiency.
+                </p>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- TAB 6: DAILY MUD REPORTS & HISTORY -->
+    <section id="tab-reports" class="tab-content-panel hidden space-y-6">
+      
+      <!-- Reports Header Actions -->
+      <div class="rig-card p-4 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="font-bold text-base text-white">Daily Drilling Mud Reports Database</h2>
+          <p class="text-xs text-slate-400">SQLite persistent historical logs, mud property progression & PDF export</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-1.5">
+            <label for="reportWellSelect" class="text-xs font-semibold text-slate-400">Filter Well:</label>
+            <select id="reportWellSelect" class="bg-rig-950 border border-slate-700 rounded text-xs font-mono text-slate-200 px-2 py-1.5">
+              <!-- Populated by JS -->
+            </select>
+          </div>
+
+          <button onclick="document.getElementById('btnOpenNewReportModal').click()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 shadow transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <span>Log Daily Report</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Historical Reports Table -->
+      <div class="rig-card overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-rig-950 border-b border-rig-700 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              <tr>
+                <th class="py-3 px-4">Report</th>
+                <th class="py-3 px-4">Date</th>
+                <th class="py-3 px-4">Depth (MD / TVD)</th>
+                <th class="py-3 px-4">Mud Weight</th>
+                <th class="py-3 px-4">PV / YP</th>
+                <th class="py-3 px-4">ECD</th>
+                <th class="py-3 px-4">LGS %</th>
+                <th class="py-3 px-4">Current Operation</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="reportsTableBody" class="divide-y divide-rig-700/60 font-sans text-xs">
+              <!-- Injected via reports.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- MODAL: NEW DAILY MUD REPORT -->
+  <div id="newReportModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-rig-900 border border-rig-700 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      
+      <div class="p-5 border-b border-rig-700 flex items-center justify-between sticky top-0 bg-rig-900 z-10">
+        <div>
+          <h3 class="font-bold text-lg text-white">Create Daily Drilling Mud Report</h3>
+          <p class="text-xs text-slate-400">Save complete daily mud record and make immediately available for operations & PDF export</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" id="btnAutofillEngines" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            <span>Autofill From Current Engines</span>
+          </button>
+          <button type="button" id="btnCloseNewReportModal" class="text-slate-400 hover:text-white p-1 text-xl font-bold">×</button>
+        </div>
+      </div>
+
+      <form id="newReportForm" class="p-5 space-y-4">
+        
+        <!-- Header Info -->
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <div>
+            <label for="modalWellSelect" class="rig-input-label">Target Well</label>
+            <select id="modalWellSelect" class="rig-input text-xs"></select>
+          </div>
+          <div>
+            <label for="repNo" class="rig-input-label">Report No</label>
+            <input type="number" id="repNo" value="17" class="rig-input font-bold text-sky-400" required>
+          </div>
+          <div>
+            <label for="repDate" class="rig-input-label">Report Date</label>
+            <input type="date" id="repDate" class="rig-input" required>
+          </div>
+          <div>
+            <label for="repEngineer" class="rig-input-label">Lead Engineer</label>
+            <input type="text" id="repEngineer" value="Erik Lindqvist" class="rig-input">
+          </div>
+        </div>
+
+        <!-- Drilling Depths & Parameters -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div>
+            <label for="repDepthMd" class="rig-input-label">Depth MD (ft)</label>
+            <input type="number" id="repDepthMd" value="12650" class="rig-input" required>
+          </div>
+          <div>
+            <label for="repDepthTvd" class="rig-input-label">Depth TVD (ft)</label>
+            <input type="number" id="repDepthTvd" value="10890" class="rig-input" required>
+          </div>
+          <div>
+            <label for="repFootage" class="rig-input-label">Daily Footage (ft)</label>
+            <input type="number" id="repFootage" value="410" class="rig-input">
+          </div>
+          <div>
+            <label for="repFormation" class="rig-input-label">Formation</label>
+            <input type="text" id="repFormation" value="Tubåen Sandstone" class="rig-input">
+          </div>
+        </div>
+
+        <!-- Mud & Rheology Section -->
+        <div class="p-3 bg-rig-950 rounded-lg border border-slate-800 space-y-3">
+          <span class="text-xs font-bold text-white uppercase tracking-wider block">Mud Properties & Rheology</span>
+          
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div>
+              <label for="repMudType" class="rig-input-label">Mud Type</label>
+              <input type="text" id="repMudType" value="Synthetic OBM" class="rig-input text-xs">
+            </div>
+            <div>
+              <label for="repMw" class="rig-input-label">Mud Wt (ppg)</label>
+              <input type="number" id="repMw" step="0.1" value="12.8" class="rig-input font-bold text-amber-300" required>
+            </div>
+            <div>
+              <label for="repPv" class="rig-input-label">PV (cP)</label>
+              <input type="number" id="repPv" value="25" class="rig-input">
+            </div>
+            <div>
+              <label for="repYp" class="rig-input-label">YP (lb/100ft²)</label>
+              <input type="number" id="repYp" value="18" class="rig-input">
+            </div>
+            <div>
+              <label for="repEcd" class="rig-input-label">ECD (ppg)</label>
+              <input type="number" id="repEcd" step="0.01" value="13.12" class="rig-input font-bold text-emerald-400">
+            </div>
+          </div>
+
+          <!-- Gel Strengths & Speeds -->
+          <div class="grid grid-cols-3 sm:grid-cols-9 gap-2">
+            <div>
+              <label for="repR600" class="text-[10px] text-slate-400 block mb-0.5">600</label>
+              <input type="number" id="repR600" value="70" class="rig-input text-center text-xs">
+            </div>
+            <div>
+              <label for="repR300" class="text-[10px] text-slate-400 block mb-0.5">300</label>
+              <input type="number" id="repR300" value="45" class="rig-input text-center text-xs">
+            </div>
+            <div>
+              <label for="repR200" class="text-[10px] text-slate-400 block mb-0.5">200</label>
+              <input type="number" id="repR200" value="34" class="rig-input text-center text-xs">
+            </div>
+            <div>
+              <label for="repR100" class="text-[10px] text-slate-400 block mb-0.5">100</label>
+              <input type="number" id="repR100" value="21" class="rig-input text-center text-xs">
+            </div>
+            <div>
+              <label for="repR6" class="text-[10px] text-slate-400 block mb-0.5">6</label>
+              <input type="number" id="repR6" value="8" class="rig-input text-center text-xs">
+            </div>
+            <div>
+              <label for="repR3" class="text-[10px] text-slate-400 block mb-0.5">3</label>
+              <input type="number" id="repR3" value="6" class="rig-input text-center text-xs">
+            </div>
+            <div>
+              <label for="repGel10s" class="text-[10px] text-slate-400 block mb-0.5">10s</label>
+              <input type="number" id="repGel10s" value="7" class="rig-input text-center text-xs text-cyan-300">
+            </div>
+            <div>
+              <label for="repGel10m" class="text-[10px] text-slate-400 block mb-0.5">10m</label>
+              <input type="number" id="repGel10m" value="13" class="rig-input text-center text-xs text-cyan-300">
+            </div>
+            <div>
+              <label for="repGel30m" class="text-[10px] text-slate-400 block mb-0.5">30m</label>
+              <input type="number" id="repGel30m" value="16" class="rig-input text-center text-xs text-cyan-300">
+            </div>
+          </div>
+        </div>
+
+        <!-- Hydraulics & Volumes Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div>
+            <label for="repFlowRate" class="rig-input-label">Flow Rate (GPM)</label>
+            <input type="number" id="repFlowRate" value="540" class="rig-input">
+          </div>
+          <div>
+            <label for="repPumpPress" class="rig-input-label">Pump Press (psi)</label>
+            <input type="number" id="repPumpPress" value="3400" class="rig-input">
+          </div>
+          <div>
+            <label for="repHoleId" class="rig-input-label">Hole ID (in)</label>
+            <input type="number" id="repHoleId" step="0.125" value="8.5" class="rig-input">
+          </div>
+          <div>
+            <label for="repDpOd" class="rig-input-label">DP OD (in)</label>
+            <input type="number" id="repDpOd" step="0.125" value="5.0" class="rig-input">
+          </div>
+        </div>
+
+        <!-- Volumes & Retort Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-6 gap-3">
+          <div>
+            <label for="repActiveVol" class="rig-input-label">Active (bbl)</label>
+            <input type="number" id="repActiveVol" value="720" class="rig-input">
+          </div>
+          <div>
+            <label for="repReserveVol" class="rig-input-label">Reserve (bbl)</label>
+            <input type="number" id="repReserveVol" value="400" class="rig-input">
+          </div>
+          <div>
+            <label for="repHoleVol" class="rig-input-label">Hole (bbl)</label>
+            <input type="number" id="repHoleVol" value="560" class="rig-input">
+          </div>
+          <div>
+            <label for="repTotalVol" class="rig-input-label">Total (bbl)</label>
+            <input type="number" id="repTotalVol" value="1730" class="rig-input">
+          </div>
+          <div>
+            <label for="repRetHgs" class="rig-input-label">HGS %</label>
+            <input type="number" id="repRetHgs" step="0.1" value="16.5" class="rig-input">
+          </div>
+          <div>
+            <label for="repRetLgs" class="rig-input-label">LGS %</label>
+            <input type="number" id="repRetLgs" step="0.1" value="4.3" class="rig-input">
+          </div>
+        </div>
+
+        <!-- Hidden Retort Fields for Autofill completeness -->
+        <input type="hidden" id="repRetWater" value="13.8">
+        <input type="hidden" id="repRetOil" value="65.4">
+        <input type="hidden" id="repRetSolids" value="20.8">
+        <input type="hidden" id="repRetAsg" value="3.86">
+        <input type="hidden" id="repRetMbt" value="11.0">
+
+        <!-- Operations & Remarks -->
+        <div>
+          <label for="repOp" class="rig-input-label">Current Operation Activity</label>
+          <input type="text" id="repOp" value="Drilling 8-1/2 inch section into Tubåen Formation at 40 ft/hr" class="rig-input">
+        </div>
+
+        <div>
+          <label for="repRemarks" class="rig-input-label">Engineer Remarks & Recommendations</label>
+          <textarea id="repRemarks" rows="2" class="rig-input text-xs font-sans">Active mud weighted up 0.2 ppg during tour. Solids control operating normally on API 170 shaker screens. Flow checks negative.</textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+          <button type="button" id="btnCancelNewReportModal" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold rounded-lg shadow-lg transition">Save Daily Mud Report</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: VIEW REPORT DETAILS -->
+  <div id="viewReportModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-rig-900 border border-rig-700 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-4">
+      
+      <div class="flex items-center justify-between border-b border-rig-700 pb-3">
+        <div>
+          <h3 id="vwReportTitle" class="font-bold text-lg text-white">Daily Mud Report</h3>
+          <p id="vwEngineer" class="text-xs text-sky-400 font-mono"></p>
+        </div>
+        <button onclick="closeViewModal()" class="text-slate-400 hover:text-white p-1 text-xl font-bold">×</button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 text-xs font-mono">
+        <div class="bg-rig-950 p-3 rounded border border-slate-800">
+          <span class="text-slate-400 block text-[10px] uppercase font-bold">Depth:</span>
+          <span id="vwDepth" class="text-white font-bold text-sm"></span>
+        </div>
+        <div class="bg-rig-950 p-3 rounded border border-slate-800">
+          <span class="text-slate-400 block text-[10px] uppercase font-bold">Density & ECD:</span>
+          <span id="vwMudWeight" class="text-amber-300 font-bold"></span> • <span id="vwEcd" class="text-emerald-400 font-bold"></span>
+        </div>
+        <div class="bg-rig-950 p-3 rounded border border-slate-800">
+          <span class="text-slate-400 block text-[10px] uppercase font-bold">Rheology:</span>
+          <span id="vwPvYp" class="text-white"></span>
+          <span id="vwGels" class="text-slate-400 block text-[10px]"></span>
+        </div>
+        <div class="bg-rig-950 p-3 rounded border border-slate-800">
+          <span class="text-slate-400 block text-[10px] uppercase font-bold">Flow & Pressure:</span>
+          <span id="vwFlowPump" class="text-white"></span>
+        </div>
+        <div class="bg-rig-950 p-3 rounded border border-slate-800">
+          <span class="text-slate-400 block text-[10px] uppercase font-bold">Retort Phase:</span>
+          <span id="vwRetort" class="text-cyan-300"></span>
+        </div>
+        <div class="bg-rig-950 p-3 rounded border border-slate-800">
+          <span class="text-slate-400 block text-[10px] uppercase font-bold">Solids Partition:</span>
+          <span id="vwSolids" class="text-white"></span>
+        </div>
+      </div>
+
+      <div class="bg-rig-950 p-3 rounded border border-slate-800 text-xs font-mono">
+        <span class="text-slate-400 block text-[10px] uppercase font-bold">Volumes:</span>
+        <span id="vwVolumes" class="text-white"></span>
+      </div>
+
+      <div class="bg-rig-950 p-3 rounded border border-slate-800 text-xs font-sans">
+        <span class="text-slate-400 block text-[10px] uppercase font-bold font-mono">Remarks & Recommendations:</span>
+        <p id="vwRemarks" class="text-slate-200 mt-1"></p>
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-slate-800">
+        <a id="vwPdfDownloadBtn" href="#" target="_blank" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          <span>Download Daily Mud Report PDF</span>
+        </a>
+
+        <button onclick="closeViewModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition">Close</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- AI MUD DOCTOR SLIDE-OUT DRAWER -->
+  <div id="aiMudDoctorDrawer" class="fixed inset-0 z-50 overflow-hidden hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+    <div id="aiMudDoctorBackdrop" onclick="closeAiMudDoctor()" class="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity"></div>
+    <div class="fixed inset-y-0 right-0 pl-10 max-w-full flex">
+      <div class="w-screen max-w-md md:max-w-lg bg-rig-900 border-l border-rig-700 shadow-2xl flex flex-col">
+        
+        <!-- Drawer Header -->
+        <div class="p-5 border-b border-rig-700 bg-rig-950/90 flex items-center justify-between sticky top-0 z-10">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-purple-950/50">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-extrabold text-base text-white tracking-tight flex items-center gap-2">
+                <span>AI Mud Doctor</span>
+                <span class="text-[10px] bg-purple-500/20 text-purple-300 border border-purple-500/40 px-2 py-0.5 rounded-full font-mono">DIAGNOSTIC ENGINE</span>
+              </h3>
+              <p class="text-xs text-slate-400">Automated Fluid Rheology &amp; Solids Health Analysis</p>
+            </div>
+          </div>
+          <button onclick="closeAiMudDoctor()" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+
+        <!-- Drawer Body -->
+        <div class="flex-1 p-5 overflow-y-auto space-y-5">
+          
+          <!-- Status Banner Card -->
+          <div id="aiDoctorStatusCard" class="p-4 rounded-xl border border-purple-500/30 bg-purple-950/20 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Fluid Health Assessment</span>
+              <span id="aiDoctorUrgencyBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wider font-mono bg-amber-500/20 text-amber-300 border border-amber-500/40">ANALYZING...</span>
+            </div>
+            <p id="aiDoctorSummaryNote" class="text-xs text-slate-200 leading-relaxed font-sans"></p>
+          </div>
+
+          <!-- Live Telemetry Snapshot Chips -->
+          <div class="space-y-2">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Telemetry Snapshot Evaluated</span>
+            <div class="grid grid-cols-3 gap-2 text-xs font-mono">
+              <div class="bg-rig-950 p-2.5 rounded-lg border border-slate-800">
+                <span class="text-[10px] text-slate-400 block">Mud Weight</span>
+                <span id="aiDoctorMw" class="font-bold text-amber-300">-- ppg</span>
+              </div>
+              <div class="bg-rig-950 p-2.5 rounded-lg border border-slate-800">
+                <span class="text-[10px] text-slate-400 block">Plastic Visc</span>
+                <span id="aiDoctorPv" class="font-bold text-cyan-400">-- cP</span>
+              </div>
+              <div class="bg-rig-950 p-2.5 rounded-lg border border-slate-800">
+                <span class="text-[10px] text-slate-400 block">Yield Point</span>
+                <span id="aiDoctorYp" class="font-bold text-emerald-400">-- lb/100ft²</span>
+              </div>
+              <div class="bg-rig-950 p-2.5 rounded-lg border border-slate-800">
+                <span class="text-[10px] text-slate-400 block">YP / PV</span>
+                <span id="aiDoctorYpPv" class="font-bold text-white">--</span>
+              </div>
+              <div class="bg-rig-950 p-2.5 rounded-lg border border-slate-800 col-span-2">
+                <span class="text-[10px] text-slate-400 block">Low Gravity Solids (LGS)</span>
+                <span id="aiDoctorLgs" class="font-bold text-purple-300">-- % vol</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recommendations Section -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                <span>Professional Field Recommendations</span>
+              </span>
+              <span id="aiDoctorRecsCount" class="text-[10px] text-slate-400 font-mono"></span>
+            </div>
+            <div id="aiDoctorRecsList" class="space-y-2.5">
+              <!-- Injected recommendations -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Drawer Footer -->
+        <div class="p-4 border-t border-rig-700 bg-rig-950/80 flex items-center justify-between">
+          <span class="text-[11px] text-slate-500 font-mono">Engine: API RP 13D/13C AI Advisor</span>
+          <button onclick="closeAiMudDoctor()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg transition">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: WELL CONTROL / KILL SHEET -->
+  <div id="killSheetModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-rig-900 border border-amber-500/40 rounded-xl shadow-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto flex flex-col">
+      
+      <!-- Modal Header -->
+      <div class="p-5 border-b border-rig-700 bg-rig-950/90 flex items-center justify-between sticky top-0 z-10">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-amber-500 via-rose-500 to-red-600 flex items-center justify-center shadow-lg shadow-rose-950/50">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="font-extrabold text-lg text-white">Well Control / Kill Sheet Solver</h3>
+              <span class="text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded font-mono font-bold">API RP 59 / 16D</span>
+            </div>
+            <p class="text-xs text-slate-400">Driller's Method &amp; Wait &amp; Weight Influx Circulation Calculations</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="prefillKillSheetFromWell()" class="text-xs bg-slate-800 hover:bg-slate-700 text-sky-400 px-3 py-1.5 rounded-lg border border-slate-700 font-semibold transition flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <span>Sync Live Well Data</span>
+          </button>
+          <button onclick="closeKillSheetModal()" class="text-slate-400 hover:text-white p-1 text-2xl font-bold leading-none">&times;</button>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 space-y-6 flex-1">
+        
+        <!-- Input Form Section -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-3.5 bg-rig-950 p-4 rounded-xl border border-slate-800">
+          <div>
+            <label for="ksCurrentMw" class="rig-input-label">Current MW (ppg)</label>
+            <input type="number" id="ksCurrentMw" step="0.1" value="12.0" class="rig-input font-bold text-amber-300">
+            <span class="text-[10px] text-slate-500 mt-0.5 block">Original density</span>
+          </div>
+
+          <div>
+            <label for="ksTvd" class="rig-input-label">TVD (ft)</label>
+            <input type="number" id="ksTvd" step="10" value="10000" class="rig-input font-bold text-white">
+            <span class="text-[10px] text-slate-500 mt-0.5 block">True vertical depth</span>
+          </div>
+
+          <div>
+            <label for="ksSidpp" class="rig-input-label">SIDPP (psi)</label>
+            <input type="number" id="ksSidpp" step="10" value="500" class="rig-input font-bold text-rose-400">
+            <span class="text-[10px] text-slate-500 mt-0.5 block">Shut-in DP pressure</span>
+          </div>
+
+          <div>
+            <label for="ksSicp" class="rig-input-label">SICP (psi)</label>
+            <input type="number" id="ksSicp" step="10" value="750" class="rig-input font-bold text-rose-400">
+            <span class="text-[10px] text-slate-500 mt-0.5 block">Shut-in casing press</span>
+          </div>
+
+          <div>
+            <label for="ksSlowPumpPress" class="rig-input-label">Slow Pump (psi)</label>
+            <input type="number" id="ksSlowPumpPress" step="10" value="800" class="rig-input font-bold text-cyan-400">
+            <span class="text-[10px] text-slate-500 mt-0.5 block">Kill rate (SCR) press</span>
+          </div>
+        </div>
+
+        <!-- Action Button -->
+        <button type="button" onclick="calculateKillSheet()" class="w-full py-3 bg-gradient-to-r from-amber-600 via-rose-600 to-red-600 hover:from-amber-500 hover:to-red-500 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-rose-950/40 transition flex items-center justify-center gap-2 border border-rose-500/30">
+          <svg class="w-5 h-5 text-amber-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+          </svg>
+          <span>Calculate Kill Sheet</span>
+        </button>
+
+        <!-- HIGH-VISIBILITY ALERT CARDS CONTAINER -->
+        <div id="killSheetResultsSection" class="space-y-5">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            <!-- 1. KWM Card -->
+            <div class="rig-card p-4 border-2 border-amber-500/80 bg-gradient-to-b from-amber-950/40 to-rig-900 shadow-xl shadow-amber-950/20 relative overflow-hidden">
+              <div class="absolute -right-4 -top-4 w-16 h-16 bg-amber-500/10 rounded-full blur-xl pointer-events-none"></div>
+              <div class="flex items-center justify-between pb-1 border-b border-amber-500/30">
+                <span class="text-xs font-bold text-amber-300 uppercase tracking-wider">Kill Mud Weight</span>
+                <span class="text-[10px] font-mono bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded border border-amber-500/40 font-bold">KWM</span>
+              </div>
+              <div class="py-2.5">
+                <span id="ksResKwm" class="text-3xl md:text-4xl font-black text-amber-400 font-mono tracking-tight">12.96 <span class="text-lg font-bold text-slate-300">ppg</span></span>
+              </div>
+              <div class="text-[11px] text-slate-400 font-mono space-y-0.5 border-t border-slate-800 pt-2">
+                <div class="flex justify-between">
+                  <span>Formula:</span>
+                  <span class="text-slate-300">MW + SIDPP / (0.052 × TVD)</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Kick Intensity:</span>
+                  <span id="ksResKickIntensity" class="text-amber-300 font-bold">+0.96 ppg</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. ICP Card -->
+            <div class="rig-card p-4 border-2 border-cyan-500/80 bg-gradient-to-b from-cyan-950/40 to-rig-900 shadow-xl shadow-cyan-950/20 relative overflow-hidden">
+              <div class="absolute -right-4 -top-4 w-16 h-16 bg-cyan-500/10 rounded-full blur-xl pointer-events-none"></div>
+              <div class="flex items-center justify-between pb-1 border-b border-cyan-500/30">
+                <span class="text-xs font-bold text-cyan-300 uppercase tracking-wider">Initial Circulating Press</span>
+                <span class="text-[10px] font-mono bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded border border-cyan-500/40 font-bold">ICP</span>
+              </div>
+              <div class="py-2.5">
+                <span id="ksResIcp" class="text-3xl md:text-4xl font-black text-cyan-400 font-mono tracking-tight">1,300 <span class="text-lg font-bold text-slate-300">psi</span></span>
+              </div>
+              <div class="text-[11px] text-slate-400 font-mono space-y-0.5 border-t border-slate-800 pt-2">
+                <div class="flex justify-between">
+                  <span>Formula:</span>
+                  <span class="text-slate-300">Slow Pump + SIDPP</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Initial BHP:</span>
+                  <span id="ksResInitialBhp" class="text-cyan-300 font-bold">6,740 psi</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. FCP Card -->
+            <div class="rig-card p-4 border-2 border-emerald-500/80 bg-gradient-to-b from-emerald-950/40 to-rig-900 shadow-xl shadow-emerald-950/20 relative overflow-hidden">
+              <div class="absolute -right-4 -top-4 w-16 h-16 bg-emerald-500/10 rounded-full blur-xl pointer-events-none"></div>
+              <div class="flex items-center justify-between pb-1 border-b border-emerald-500/30">
+                <span class="text-xs font-bold text-emerald-300 uppercase tracking-wider">Final Circulating Press</span>
+                <span class="text-[10px] font-mono bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/40 font-bold">FCP</span>
+              </div>
+              <div class="py-2.5">
+                <span id="ksResFcp" class="text-3xl md:text-4xl font-black text-emerald-400 font-mono tracking-tight">864 <span class="text-lg font-bold text-slate-300">psi</span></span>
+              </div>
+              <div class="text-[11px] text-slate-400 font-mono space-y-0.5 border-t border-slate-800 pt-2">
+                <div class="flex justify-between">
+                  <span>Formula:</span>
+                  <span class="text-slate-300">Slow Pump × (KWM / MW)</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Pressure Step-Down:</span>
+                  <span id="ksResStepDown" class="text-emerald-300 font-bold">Δ 436 psi</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Field Instructions Checklist Box -->
+          <div class="rig-card p-5 space-y-3 border border-slate-700/80 bg-rig-950/60">
+            <div class="flex items-center justify-between border-b border-rig-700/80 pb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-2">
+                <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Standard Well Control Operating Instructions (Driller's / W&amp;W Method)</span>
+              </span>
+              <span class="text-[10px] text-slate-400 font-mono">RIG SAFETY PROTOCOL</span>
+            </div>
+            <div id="ksInstructionsList" class="space-y-2 text-xs font-mono">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 border-t border-rig-700 bg-rig-950 flex items-center justify-between">
+        <span class="text-xs text-slate-400 font-mono">MudFlow OS • Emergency Well Control Module</span>
+        <button onclick="closeKillSheetModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg transition">Close</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Notifications Anchor -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Scripts -->
+  <script src="/static/js/app.js"></script>
+  <script src="/static/js/rheology.js"></script>
+  <script src="/static/js/hydraulics.js"></script>
+  <script src="/static/js/volumetrics.js"></script>
+  <script src="/static/js/solids.js"></script>
+  <script src="/static/js/reports.js"></script>
+</body>
+</html>
